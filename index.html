@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎒 Aurelio's Lernhub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  :root {
+    --red: #E53E3E; --green: #276749; --blue: #2B6CB0;
+    --purple: #553C9A; --orange: #C05621; --bg: #F7F8FF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 18px 24px 0; color: white;
+  }
+  .header-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .header-top h1 { font-size: 22px; font-weight: 900; }
+  .header-top p { font-size: 12px; opacity: 0.8; }
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    background: transparent; border: none; color: rgba(255,255,255,0.7);
+    padding: 10px 16px; border-radius: 12px 12px 0 0;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .tab.active { background: white; color: #667eea; }
+  .tab:hover:not(.active) { background: rgba(255,255,255,0.2); color: white; }
+
+  /* CONTENT */
+  .content { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
+
+  .card {
+    background: white; border-radius: 18px; padding: 20px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-bottom: 16px;
+  }
+
+  /* WOCHENPLAN */
+  .week-header {
+    border-radius: 12px 12px 0 0; padding: 10px 20px;
+    color: white; font-weight: 900; font-size: 15px;
+  }
+  .week-body { border: 2px solid; border-top: none; border-radius: 0 0 14px 14px; overflow: hidden; }
+  .day-row {
+    display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+    border-top: 1px solid #eee;
+  }
+  .day-row:first-child { border-top: none; }
+  .day-row:nth-child(even) { background: #f8f9fa; }
+  .day-badge {
+    min-width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px;
+  }
+  .day-content { flex: 1; }
+  .day-fach { font-weight: 800; font-size: 13px; margin-bottom: 2px; }
+  .day-inhalt { font-size: 12px; color: #666; line-height: 1.4; }
+  .day-zeit {
+    font-size: 11px; color: #888; background: #f0f0f0;
+    border-radius: 8px; padding: 3px 8px; text-align: center; min-width: 85px;
+    font-weight: 700;
+  }
+  .today-row { background: #fffbeb !important; }
+  .today-badge-ring { border: 2px solid #F6AD55; }
+
+  /* EXERCISES */
+  .btn {
+    background: #667eea; color: white; border: none; border-radius: 12px;
+    padding: 11px 24px; font-size: 15px; font-weight: 800;
+    font-family: 'Nunito', sans-serif; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.4); transition: all 0.2s;
+  }
+  .btn:disabled { background: #ccc; box-shadow: none; cursor: default; }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); }
+
+  .word-box {
+    background: linear-gradient(135deg, #eef2ff, #f5f0ff);
+    border-radius: 16px; padding: 28px 20px; text-align: center; margin-bottom: 16px;
+  }
+  .word-dashes { font-size: 36px; font-weight: 900; letter-spacing: 8px; color: #2d3748; }
+  .word-hint { font-size: 13px; color: #888; margin-top: 6px; }
+
+  input[type=text], input[type=number] {
+    width: 100%; padding: 13px 18px; font-size: 20px; font-weight: 700;
+    font-family: 'Nunito', sans-serif; border: 2px solid #e2e8f0;
+    border-radius: 12px; outline: none; text-align: center; transition: all 0.2s;
+  }
+  input:focus { border-color: #667eea; }
+  input.correct { border-color: #48bb78; background: #f0fff4; }
+  input.wrong { border-color: #fc8181; background: #fff5f5; }
+
+  .result-box {
+    margin-top: 12px; padding: 12px 16px; border-radius: 12px; text-align: center;
+    font-weight: 800; font-size: 17px;
+  }
+  .result-box.ok { background: #f0fff4; border: 2px solid #48bb78; color: #276749; }
+  .result-box.err { background: #fff5f5; border: 2px solid #fc8181; color: #c53030; }
+
+  .score-bar { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 13px; }
+
+  /* TABS CONTENT */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .week-select { display: flex; gap: 10px; margin-bottom: 16px; }
+  .wbtn {
+    padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  /* MATH */
+  .math-display {
+    background: linear-gradient(135deg, #f0fff4, #f7fff0);
+    border-radius: 16px; padding: 28px 20px; text-align: center; margin-bottom: 16px;
+  }
+  .math-expr { font-size: 40px; font-family: 'Courier New', monospace; font-weight: 900; }
+  .hint-box {
+    background: #fffbeb; border-radius: 10px; padding: 10px 14px;
+    font-size: 13px; color: #744210; margin-bottom: 14px;
+  }
+
+  /* ERROR TRACKING */
+  .error-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .error-label { min-width: 120px; font-weight: 800; font-size: 14px; }
+  .error-track { flex: 1; height: 10px; background: #f0f0f0; border-radius: 5px; overflow: hidden; }
+  .error-fill { height: 100%; border-radius: 5px; transition: width 0.4s; }
+  .error-count { min-width: 28px; font-weight: 800; font-size: 13px; text-align: right; }
+
+  /* LEO */
+  .leo-link {
+    display: block; background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white; text-decoration: none; border-radius: 16px;
+    padding: 24px; text-align: center; font-weight: 900; font-size: 18px;
+    box-shadow: 0 8px 24px rgba(102,126,234,0.4); transition: all 0.2s; margin-bottom: 12px;
+  }
+  .leo-link:hover { transform: translateY(-2px); }
+  .leo-link .big { font-size: 42px; display: block; margin-bottom: 8px; }
+
+  @media print {
+    .header, .tabs, .btn, .week-select { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #eee; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div style="font-size:36px">🎒</div>
+    <div>
+      <h1>Aurelio's Lernhub</h1>
+      <p>2. Klasse Wien · 10 Min täglich um 18:00 Uhr</p>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('plan')">📅 Wochenplan</button>
+    <button class="tab" onclick="showTab('lw')">✏️ Lernwörter</button>
+    <button class="tab" onclick="showTab('mathe')">🔢 Mathematik</button>
+    <button class="tab" onclick="showTab('leo')">🦁 Leo (KI)</button>
+    <button class="tab" onclick="showTab('eltern')">📊 Eltern</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ── WOCHENPLAN ──────────────────────────────────────────────────────── -->
+<div class="section active" id="tab-plan">
+  <div style="margin-bottom:28px">
+    <div class="week-header" style="background:#E53E3E">Diese Woche</div>
+    <div class="week-body" style="border-color:#E53E3E" id="week1-body"></div>
+  </div>
+  <div>
+    <div class="week-header" style="background:#4ECDC4">Nächste Woche</div>
+    <div class="week-body" style="border-color:#4ECDC4" id="week2-body"></div>
+  </div>
+</div>
+
+<!-- ── LERNWÖRTER ─────────────────────────────────────────────────────── -->
+<div class="section" id="tab-lw">
+  <div class="week-select">
+    <button class="wbtn" id="lw-btn1" style="background:#E53E3E;color:white" onclick="setLWWeek(1)">Woche 1: ai/ei/C</button>
+    <button class="wbtn" id="lw-btn2" style="background:#eee;color:#444" onclick="setLWWeek(2)">Woche 2: ver-</button>
+  </div>
+  <div class="card">
+    <div class="score-bar">
+      <span id="lw-progress">Wort 1 / 7</span>
+      <span id="lw-score">✅ 0 · ❌ 0</span>
+    </div>
+    <div class="word-box" id="lw-wordbox">
+      <div class="word-dashes" id="lw-dashes">_ _ _ _ _</div>
+      <div class="word-hint" id="lw-hint">7 Buchstaben</div>
+    </div>
+    <input type="text" id="lw-input" placeholder="Schreib das Wort hier..." onkeydown="lwKeyDown(event)">
+    <div id="lw-result" style="display:none" class="result-box"></div>
+    <div style="margin-top:14px;display:flex;justify-content:center;gap:12px">
+      <button class="btn" id="lw-check-btn" style="background:#667eea" onclick="lwCheck()">Überprüfen ✓</button>
+      <button class="btn" id="lw-next-btn" style="display:none;background:#48bb78" onclick="lwNext()">Weiter →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MATHEMATIK ─────────────────────────────────────────────────────── -->
+<div class="section" id="tab-mathe">
+  <div class="week-select">
+    <button class="wbtn" id="m-btn-add" style="background:#276749;color:white" onclick="setMathMode('add')">➕ Addition</button>
+    <button class="wbtn" id="m-btn-sub" style="background:#eee;color:#444" onclick="setMathMode('sub')">➖ Subtraktion</button>
+    <button class="wbtn" id="m-btn-mal" style="background:#eee;color:#444" onclick="setMathMode('mal')">✖️ Malreihen</button>
+  </div>
+  <div class="card">
+    <div class="score-bar">
+      <span id="m-mode-label" style="font-weight:800">➕ Addition</span>
+      <span id="m-score">✅ 0 · ❌ 0</span>
+    </div>
+    <div class="math-display">
+      <div class="math-expr" id="m-expr">36 + 27 = ?</div>
+    </div>
+    <div class="hint-box" id="m-hint">💡 Erst 36 + 20 = 56, dann 56 + 7 = 63</div>
+    <input type="number" id="m-input" placeholder="Deine Antwort..." onkeydown="mKeyDown(event)">
+    <div id="m-result" style="display:none" class="result-box"></div>
+    <div style="margin-top:14px;display:flex;justify-content:center;gap:12px">
+      <button class="btn" id="m-check-btn" style="background:#276749" onclick="mCheck()">Überprüfen ✓</button>
+      <button class="btn" id="m-next-btn" style="display:none;background:#48bb78" onclick="mNext()">Nächste →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEO (KI TUTOR) ────────────────────────────────────────────────── -->
+<div class="section" id="tab-leo">
+  <a class="leo-link" href="leo.html" target="_blank">
+    <span class="big">🦁</span>
+    Mit LEO lernen!
+    <div style="font-size:14px;font-weight:600;opacity:0.9;margin-top:6px">Klicke hier — Leo erklärt alles!</div>
+  </a>
+  <div class="card" style="background:#f9f6ff">
+    <h3 style="font-weight:900;color:#553C9A;margin-bottom:10px">Was kann Leo?</h3>
+    <div style="font-size:14px;color:#444;line-height:1.7">
+      🔤 Lernwörter erklären lassen<br>
+      🔢 Rechenaufgaben Schritt für Schritt lösen<br>
+      📖 Wörter buchstabieren und verstehen<br>
+      ❓ Fragen stellen: "Warum schreibt man Cent mit C?"<br>
+      🌟 Aufgaben eintippen und gemeinsam lösen
+    </div>
+  </div>
+  <div class="card" style="background:#f0fff4">
+    <h3 style="font-weight:900;color:#276749;margin-bottom:10px">📱 Auch mit ANTON üben!</h3>
+    <div style="font-size:13px;color:#444;line-height:1.7">
+      ANTON und Leo ergänzen sich gut:<br>
+      <strong>ANTON</strong> = strukturierte Übungen, Punkte sammeln, Selbstkontrolle<br>
+      <strong>Leo</strong> = erklären lassen wenn man etwas nicht versteht<br>
+      <strong>Diese App</strong> = gezielte Lernwörter + Fehler-Tracking für dich als Elternteil
+    </div>
+  </div>
+</div>
+
+<!-- ── ELTERN DASHBOARD ───────────────────────────────────────────────── -->
+<div class="section" id="tab-eltern">
+  <div class="card">
+    <h3 style="font-weight:900;color:#2d3748;margin-bottom:4px">📊 Fehler-Auswertung</h3>
+    <p style="font-size:13px;color:#718096;margin-bottom:16px">Welche Wörter/Aufgaben brauchen mehr Übung?</p>
+    <div id="error-display"><p style="color:#aaa;font-size:14px">Noch keine Übungen gemacht.</p></div>
+    <button class="btn" style="background:#fc8181;margin-top:14px;font-size:13px;padding:8px 16px" onclick="clearErrors()">Fehler zurücksetzen</button>
+  </div>
+
+  <div class="card">
+    <h3 style="font-weight:900;color:#2d3748;margin-bottom:14px">💡 Eltern-Tipps (nach Caroline von St. Ange)</h3>
+    <div id="tips-list"></div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────
+const LW = {
+  1: ["Hai","Mai","Kaiser","Mais","Cent","Comic","Clown"],
+  2: ["verstehen","verändern","verdienen","verfahren","verlieren","vergessen","verletzen"]
+};
+
+const WPLAN = [
+  { week:1, day:"Mi", fach:"🇩🇪 Deutsch", color:"#E53E3E",
+    inhalt:"Lernwörter: Cent, Comic, Clown + Vorsilben ab-, auf-, vor-", today:true },
+  { week:1, day:"Do", fach:"🔢 Mathe",    color:"#E53E3E",
+    inhalt:"Subtraktion mit Unterschreitung: 71−35, 82−46 → schrittweise rechnen" },
+  { week:1, day:"Fr", fach:"🇩🇪 Deutsch", color:"#E53E3E",
+    inhalt:"Diktat alle 7 LW + zusammengesetzte Nomen finden" },
+  { week:2, day:"Mo", fach:"🇩🇪 Deutsch", color:"#4ECDC4",
+    inhalt:"Neue LW: verstehen, verändern, verdienen → Vorsilbe ver- erklären" },
+  { week:2, day:"Di", fach:"🔢 Mathe",    color:"#4ECDC4",
+    inhalt:"Malreihen: 6er, 7er, 8er Reihe — Blitzrechnen" },
+  { week:2, day:"Mi", fach:"🇩🇪 Deutsch", color:"#4ECDC4",
+    inhalt:"verfahren, verlieren, vergessen, verletzen + Bildergeschichte" },
+  { week:2, day:"Do", fach:"🔢 Mathe",    color:"#4ECDC4",
+    inhalt:"Sachaufgaben + Schaubilder lesen und auswerten" },
+  { week:2, day:"Fr", fach:"🇩🇪 Deutsch", color:"#4ECDC4",
+    inhalt:"Diktat alle 7 LW Woche 2 + Wörterbuch-Suche + Alphabet" },
+];
+
+const TIPS = [
+  { icon:"⏱️", title:"10 Minuten reichen", text:"Kurz und täglich schlägt lang und selten. Timer stellen, dann Feierabend — für euch beide." },
+  { icon:"🌱", title:"Fortschritt zählt, nicht Perfektion", text:"«Gestern 5 richtig, heute 6!» — Vergleich mit gestern, nicht mit einem Ideal." },
+  { icon:"🗣️", title:"Laut aussprechen lassen", text:"Beim Lernwörter-Üben: Aurelio buchstabiert laut, bevor er schreibt. Aktiviert das Hörzentrum." },
+  { icon:"✂️", title:"Zerlegung sichtbar machen (Mathe)", text:"36+27: Erst 36+20=56, dann 56+7=63. Schritte zeigen, nicht abkürzen." },
+  { icon:"🎯", title:"Fehler-Wörter als Priorität", text:"Im Dashboard siehst du welche Wörter oft falsch sind. Diese 2x täglich extra üben." },
+  { icon:"🛁", title:"Lernort variieren", text:"Manchmal am Boden, mit Kreide, im Stehen — räumliche Abwechslung hilft der Erinnerung." },
+];
+
+// ─── WOCHENPLAN RENDER ────────────────────────────────────────────────────
+function renderPlan() {
+  [1,2].forEach(w => {
+    const el = document.getElementById(`week${w}-body`);
+    const days = WPLAN.filter(d => d.week === w);
+    el.innerHTML = days.map(d => `
+      <div class="day-row ${d.today ? 'today-row' : ''}">
+        <div class="day-badge ${d.today ? 'today-badge-ring' : ''}"
+          style="background:${d.color}22;color:${d.color}">
+          ${d.today ? '⭐' : d.day}
+        </div>
+        <div class="day-content">
+          <div class="day-fach" style="color:${d.color}">${d.fach}${d.today ? ' ← HEUTE' : ''}</div>
+          <div class="day-inhalt">${d.inhalt}</div>
+        </div>
+        <div class="day-zeit">18:00<br>10 Min</div>
+      </div>`).join('');
+  });
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'eltern') renderErrors();
+}
+
+// ─── LERNWÖRTER ───────────────────────────────────────────────────────────
+let lwWeek = 1, lwQueue = [], lwIdx = 0, lwScore = {r:0,w:0}, lwDone = false;
+
+function shuffle(arr) { return [...arr].sort(() => Math.random()-0.5); }
+
+function setLWWeek(w) {
+  lwWeek = w;
+  document.getElementById('lw-btn1').style.background = w===1 ? '#E53E3E' : '#eee';
+  document.getElementById('lw-btn1').style.color = w===1 ? 'white' : '#444';
+  document.getElementById('lw-btn2').style.background = w===2 ? '#2B6CB0' : '#eee';
+  document.getElementById('lw-btn2').style.color = w===2 ? 'white' : '#444';
+  lwQueue = shuffle(LW[w]); lwIdx = 0; lwScore = {r:0,w:0};
+  lwRender();
+}
+
+function lwRender() {
+  const word = lwQueue[lwIdx];
+  document.getElementById('lw-dashes').textContent = '_ '.repeat(word.length).trim();
+  document.getElementById('lw-hint').textContent = `${word.length} Buchstaben`;
+  document.getElementById('lw-progress').textContent = `Wort ${lwIdx+1} / ${lwQueue.length}`;
+  document.getElementById('lw-score').textContent = `✅ ${lwScore.r} · ❌ ${lwScore.w}`;
+  const inp = document.getElementById('lw-input');
+  inp.value = ''; inp.className = ''; inp.disabled = false;
+  document.getElementById('lw-result').style.display = 'none';
+  document.getElementById('lw-check-btn').style.display = '';
+  document.getElementById('lw-next-btn').style.display = 'none';
+  setTimeout(() => inp.focus(), 50);
+}
+
+function lwCheck() {
+  const inp = document.getElementById('lw-input');
+  if (!inp.value.trim()) return;
+  const word = lwQueue[lwIdx];
+  const ok = inp.value.trim() === word;
+  inp.className = ok ? 'correct' : 'wrong';
+  inp.disabled = true;
+  lwScore[ok ? 'r' : 'w']++;
+  document.getElementById('lw-score').textContent = `✅ ${lwScore.r} · ❌ ${lwScore.w}`;
+  const res = document.getElementById('lw-result');
+  res.style.display = '';
+  res.className = 'result-box ' + (ok ? 'ok' : 'err');
+  res.textContent = ok ? '✅ Super! Richtig!' : `❌ Fast! Es heißt: ${word}`;
+  document.getElementById('lw-check-btn').style.display = 'none';
+  document.getElementById('lw-next-btn').style.display = '';
+  if (!ok) trackError('lw', word);
+}
+
+function lwNext() {
+  lwIdx++;
+  if (lwIdx >= lwQueue.length) {
+    document.getElementById('lw-wordbox').innerHTML =
+      `<div style="font-size:48px">🎉</div>
+       <div style="font-weight:900;font-size:20px;margin-top:8px">Alle Wörter geschafft!</div>
+       <div style="color:#666;margin-top:6px">✅ ${lwScore.r} richtig · ❌ ${lwScore.w} falsch</div>`;
+    document.getElementById('lw-input').style.display = 'none';
+    document.getElementById('lw-result').style.display = 'none';
+    document.getElementById('lw-next-btn').textContent = '🔄 Nochmal';
+    document.getElementById('lw-next-btn').onclick = () => setLWWeek(lwWeek);
+    document.getElementById('lw-check-btn').style.display = 'none';
+    return;
+  }
+  lwRender();
+}
+
+function lwKeyDown(e) {
+  if (e.key === 'Enter') {
+    if (document.getElementById('lw-next-btn').style.display !== 'none') lwNext();
+    else lwCheck();
+  }
+}
+
+// ─── MATHEMATIK ───────────────────────────────────────────────────────────
+let mMode = 'add', mProblem = null, mScore = {r:0,w:0};
+
+function genProblem(mode) {
+  if (mode === 'add') {
+    let a,b;
+    do { a=Math.floor(Math.random()*50)+15; b=Math.floor(Math.random()*40)+10; }
+    while ((a%10)+(b%10) < 10);
+    return { expr:`${a} + ${b}`, ans:a+b,
+      hint:`💡 Erst ${a} + ${Math.floor(b/10)*10} = ${a+Math.floor(b/10)*10}, dann + ${b%10}` };
+  }
+  if (mode === 'sub') {
+    let a,b;
+    do { a=Math.floor(Math.random()*50)+30; b=Math.floor(Math.random()*30)+5; }
+    while ((a%10)>=(b%10) || a-b<0);
+    return { expr:`${a} − ${b}`, ans:a-b,
+      hint:`💡 Erst ${a} − ${Math.floor(b/10)*10} = ${a-Math.floor(b/10)*10}, dann − ${b%10}` };
+  }
+  const t=[2,3,4,5,6,7,8,9,10][Math.floor(Math.random()*9)];
+  const f=Math.floor(Math.random()*10)+1;
+  return { expr:`${t} × ${f}`, ans:t*f, hint:`💡 Denk an die ${t}er Reihe!` };
+}
+
+function setMathMode(m) {
+  mMode = m;
+  ['add','sub','mal'].forEach(x => {
+    const btn = document.getElementById('m-btn-'+x);
+    const colors = {add:'#276749',sub:'#744210',mal:'#553C9A'};
+    btn.style.background = m===x ? colors[x] : '#eee';
+    btn.style.color = m===x ? 'white' : '#444';
+  });
+  const labels = {add:'➕ Addition',sub:'➖ Subtraktion',mal:'✖️ Malreihen'};
+  document.getElementById('m-mode-label').textContent = labels[m];
+  mScore = {r:0,w:0};
+  mNewProblem();
+}
+
+function mNewProblem() {
+  mProblem = genProblem(mMode);
+  document.getElementById('m-expr').textContent = mProblem.expr + ' = ?';
+  document.getElementById('m-hint').textContent = mProblem.hint;
+  const inp = document.getElementById('m-input');
+  inp.value = ''; inp.className = ''; inp.disabled = false;
+  document.getElementById('m-result').style.display = 'none';
+  document.getElementById('m-check-btn').style.display = '';
+  document.getElementById('m-next-btn').style.display = 'none';
+  setTimeout(() => inp.focus(), 50);
+}
+
+function mCheck() {
+  const inp = document.getElementById('m-input');
+  if (!inp.value.trim()) return;
+  const ans = parseInt(inp.value);
+  const ok = ans === mProblem.ans;
+  inp.className = ok ? 'correct' : 'wrong';
+  inp.disabled = true;
+  mScore[ok?'r':'w']++;
+  document.getElementById('m-score').textContent = `✅ ${mScore.r} · ❌ ${mScore.w}`;
+  const res = document.getElementById('m-result');
+  res.style.display = '';
+  res.className = 'result-box ' + (ok ? 'ok' : 'err');
+  res.textContent = ok ? '🌟 Richtig! Klasse!' : `❌ Richtige Antwort: ${mProblem.ans}`;
+  document.getElementById('m-check-btn').style.display = 'none';
+  document.getElementById('m-next-btn').style.display = '';
+  if (!ok) trackError('mathe-'+mMode, mProblem.expr);
+}
+
+function mNext() { mNewProblem(); }
+function mKeyDown(e) {
+  if (e.key === 'Enter') {
+    if (document.getElementById('m-next-btn').style.display !== 'none') mNext();
+    else mCheck();
+  }
+}
+
+// ─── ERROR TRACKING (localStorage) ───────────────────────────────────────
+function getErrors() {
+  try { return JSON.parse(localStorage.getItem('aurelio-errors') || '{}'); } catch { return {}; }
+}
+function trackError(cat, item) {
+  const e = getErrors();
+  const k = cat+'::'+item;
+  e[k] = (e[k]||0)+1;
+  localStorage.setItem('aurelio-errors', JSON.stringify(e));
+}
+function clearErrors() {
+  if (confirm('Alle Fehler-Aufzeichnungen löschen?')) {
+    localStorage.removeItem('aurelio-errors');
+    renderErrors();
+  }
+}
+
+function renderErrors() {
+  const e = getErrors();
+  const entries = Object.entries(e).sort((a,b)=>b[1]-a[1]);
+  const el = document.getElementById('error-display');
+  if (!entries.length) {
+    el.innerHTML = '<p style="color:#aaa;font-size:14px">Noch keine Fehler aufgezeichnet.</p>';
+    return;
+  }
+  const lw = entries.filter(([k])=>k.startsWith('lw'));
+  const mathe = entries.filter(([k])=>k.startsWith('mathe'));
+  let html = '';
+  if (lw.length) {
+    html += '<div style="font-weight:900;color:#E53E3E;font-size:14px;margin-bottom:10px">🇩🇪 Schwierige Lernwörter</div>';
+    lw.slice(0,10).forEach(([k,v]) => {
+      const word = k.split('::')[1];
+      const pct = Math.min(100, v*20);
+      const col = v>=3?'#fc8181':v>=2?'#f6ad55':'#68d391';
+      html += `<div class="error-bar">
+        <div class="error-label">${word}</div>
+        <div class="error-track"><div class="error-fill" style="width:${pct}%;background:${col}"></div></div>
+        <div class="error-count" style="color:${v>=3?'#e53e3e':'#444'}">×${v}</div>
+      </div>`;
+    });
+  }
+  if (mathe.length) {
+    html += '<div style="font-weight:900;color:#276749;font-size:14px;margin:16px 0 10px">🔢 Schwierige Aufgaben</div>';
+    mathe.slice(0,8).forEach(([k,v]) => {
+      const [,type,expr] = k.split('::');
+      html += `<span style="display:inline-block;background:#f7f7f7;border-radius:8px;padding:4px 10px;margin:3px;font-size:13px;font-weight:800">${expr} <span style="color:#e53e3e;font-size:11px">×${v}</span></span>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function renderTips() {
+  document.getElementById('tips-list').innerHTML = TIPS.map(t => `
+    <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start">
+      <div style="font-size:22px;min-width:32px">${t.icon}</div>
+      <div>
+        <div style="font-weight:800;color:#2d3748;font-size:14px;margin-bottom:2px">${t.title}</div>
+        <div style="font-size:13px;color:#718096;line-height:1.5">${t.text}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+renderPlan();
+setLWWeek(1);
+setMathMode('add');
+renderTips();
+</script>
+</body>
+</html>
